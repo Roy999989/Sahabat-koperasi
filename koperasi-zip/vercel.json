@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "routes": [
+    { "src": "/seed-firebase.html", "dest": "/seed-firebase.html" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
