@@ -28,7 +28,33 @@
   window._fireReady = true;
   document.dispatchEvent(new Event("firebaseReady"));
 </script>
+<!-- Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
+/* EXPORT BUTTONS */
+.export-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.btn-export{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;
+  border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:.73rem;font-weight:700;
+  cursor:pointer;transition:opacity .2s;}
+.btn-export:hover{opacity:.85;}
+.btn-xlsx{background:#1D6F42;color:#fff;}
+.btn-pdf{background:#DC143C;color:#fff;}
+.btn-csv{background:#0D47A1;color:#fff;}
+
+/* CHART */
+.chart-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:12px;
+  padding:16px;margin-bottom:16px;}
+.chart-title{font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:var(--accent);margin-bottom:12px;}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+canvas{max-height:200px;}
+
+/* VALIDASI */
+.field input.invalid,.field select.invalid{border-color:var(--red)!important;}
+.field-error{font-size:.65rem;color:#f87171;margin-top:3px;display:none;}
+.field-error.show{display:block;}
+</style>
 :root{
   --bg:#0a0f1e;--surface:#111827;--surface2:#1a2235;--surface3:#1e2d3d;
   --border:#1e3050;--accent:#00c896;--accent2:#f59e0b;--accent3:#6366f1;
@@ -194,10 +220,32 @@ tfoot td{padding:9px 10px;font-weight:700;}
 .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
 .btn-cancel{background:none;border:1px solid var(--border);color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:.73rem;padding:8px 14px;border-radius:8px;cursor:pointer;}
 
-/* LOADING */
-.loading{position:fixed;inset:0;z-index:9998;background:rgba(10,15,30,.8);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
-.loading-spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg)}}
+/* MASTER DATA */
+.master-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.master-card{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:16px;}
+.master-title{font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+.divisi-tag{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 10px;margin:3px;font-size:.72rem;}
+.divisi-tag button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.7rem;line-height:1;}
+.divisi-tag button:hover{color:var(--red);}
+.divisi-add{display:flex;gap:6px;margin-top:10px;}
+.divisi-add input{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.75rem;padding:7px 10px;border-radius:7px;outline:none;}
+.divisi-add input:focus{border-color:var(--accent);}
+.divisi-add button{background:var(--accent);color:#000;border:none;font-weight:700;font-size:.72rem;padding:7px 12px;border-radius:7px;cursor:pointer;}
+
+/* CICILAN MANUAL */
+.cicil-manual-box{background:rgba(0,200,150,.06);border:1px solid rgba(0,200,150,.2);border-radius:9px;padding:12px;margin:10px 0;}
+.cicil-manual-title{font-size:.62rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.cicil-manual-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;}
+.cicil-manual-row input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.78rem;padding:7px 10px;border-radius:7px;outline:none;}
+.cicil-manual-row input:focus{border-color:var(--accent);}
+.cicil-manual-row span{font-size:.7rem;color:var(--muted);white-space:nowrap;}
+.btn-cicil{background:var(--accent);color:#000;border:none;font-weight:700;font-size:.72rem;padding:7px 14px;border-radius:7px;cursor:pointer;white-space:nowrap;}
+.sisa-info{font-size:.72rem;color:var(--accent2);font-family:'JetBrains Mono',monospace;margin-top:4px;}
+
+/* BREAKDOWN TABLE */
+.breakdown-section{margin-bottom:20px;}
+.breakdown-title{font-size:.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+
 
 /* SET */
 .set-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -260,6 +308,7 @@ tfoot td{padding:9px 10px;font-weight:700;}
   <div class="tab active"  data-tab="dashboard">📊 Dashboard</div>
   <div class="tab"         data-tab="pinjaman">📋 Data Pinjaman</div>
   <div class="tab"         data-tab="rekap">📈 Rekap Tahunan</div>
+  <div class="tab"         data-tab="master">🗂 Master Data</div>
   <div class="tab"         data-tab="setting">⚙️ Pengaturan</div>
 </div>
 
@@ -313,6 +362,7 @@ tfoot td{padding:9px 10px;font-weight:700;}
     <div class="search-box">🔍<input type="text" id="searchInput" placeholder="Cari nama..."></div>
     <select class="flt" id="fltStatus"><option value="">Semua Status</option><option>Aktif</option><option>Lunas</option><option>Pengajuan</option><option>Macet</option></select>
     <select class="flt" id="fltDivisi"><option value="">Semua Divisi</option></select>
+    <button class="btn-export btn-xlsx" onclick="exportPinjamanExcel()" style="padding:7px 12px;font-size:.7rem">📊 Excel</button>
     <button class="btn-add" id="btn-tambah">+ Tambah</button>
   </div>
   <div class="tbl-wrap">
@@ -350,6 +400,35 @@ tfoot td{padding:9px 10px;font-weight:700;}
 <div id="panel-rekap" class="panel">
 <div class="panel-wrap">
   <div class="sec-title">▸ REKAP KEUANGAN TAHUNAN</div>
+
+  <!-- Export Bar -->
+  <div class="export-bar">
+    <button class="btn-export btn-xlsx" onclick="exportExcel()">📊 Export Excel</button>
+    <button class="btn-export btn-pdf"  onclick="exportPDF()">📄 Export PDF</button>
+    <button class="btn-export btn-csv"  onclick="exportCSV()">📋 Export CSV</button>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-grid">
+    <div class="chart-wrap">
+      <div class="chart-title">📈 Modal Akhir per Bulan</div>
+      <canvas id="chartModal"></canvas>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">💰 Bunga Diterima per Bulan</div>
+      <canvas id="chartBunga"></canvas>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">📋 Sisa Pokok per Bulan</div>
+      <canvas id="chartSisaPokok"></canvas>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">📊 Utilisasi Modal (%)</div>
+      <canvas id="chartUtilisasi"></canvas>
+    </div>
+  </div>
+
+  <!-- Table -->
   <div class="tbl-wrap">
     <table>
       <thead><tr><th>Bulan</th><th>Modal Awal</th><th>Modal Masuk</th><th>Sisa Pokok</th><th>Bunga (Bln Ini)</th><th>Modal Akhir</th><th>Saldo Dipinjam</th><th>Utilisasi</th></tr></thead>
@@ -357,6 +436,69 @@ tfoot td{padding:9px 10px;font-weight:700;}
       <tfoot id="rekapFoot"></tfoot>
     </table>
   </div>
+</div></div>
+
+<!-- MASTER DATA -->
+<div id="panel-master" class="panel">
+<div class="panel-wrap">
+  <div class="sec-title">▸ MASTER DATA & BREAKDOWN</div>
+
+  <div class="master-grid">
+    <!-- Divisi Management -->
+    <div class="master-card">
+      <div class="master-title">
+        <span>📁 Master Divisi</span>
+        <span style="color:var(--muted);font-weight:400;font-size:.65rem" id="divisi-count"></span>
+      </div>
+      <div id="divisi-tags"></div>
+      <div class="divisi-add">
+        <input type="text" id="divisi-new-input" placeholder="Tambah divisi baru...">
+        <button onclick="addDivisi()">+ Tambah</button>
+      </div>
+    </div>
+
+    <!-- Status Breakdown -->
+    <div class="master-card">
+      <div class="master-title">📊 Breakdown Status (Bulan Aktif)</div>
+      <div id="master-status-breakdown"></div>
+    </div>
+  </div>
+
+  <!-- Breakdown per Divisi -->
+  <div class="breakdown-section">
+    <div class="breakdown-title">💼 Breakdown Per Divisi — <span id="master-bulan-lbl"></span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Divisi</th>
+            <th>Jml Anggota</th>
+            <th>Total Nominal</th>
+            <th>Total Sisa Pokok</th>
+            <th>Total Bunga/bln</th>
+            <th>Aktif</th>
+            <th>Macet</th>
+            <th>Lunas</th>
+          </tr>
+        </thead>
+        <tbody id="master-divisi-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Riwayat Cicilan -->
+  <div class="breakdown-section">
+    <div class="breakdown-title">🧾 Riwayat Cicilan Manual Bulan Ini</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Nama</th><th>Nominal Dibayar</th><th>Sisa Pokok Sebelum</th><th>Sisa Pokok Sesudah</th><th>Status</th></tr>
+        </thead>
+        <tbody id="master-cicilan-body"></tbody>
+      </table>
+    </div>
+  </div>
+
 </div></div>
 
 <!-- SETTING -->
@@ -392,24 +534,20 @@ tfoot td{padding:9px 10px;font-weight:700;}
   <button class="close-btn" id="close-modal-btn">✕</button>
   <div class="modal-title" id="modalTitle">Tambah Data Pinjaman</div>
   <div class="fg">
-    <div class="field"><label>Nama Anggota</label><input id="f-nama" placeholder="Nama lengkap"></div>
+    <div class="field"><label>Nama Anggota</label><input id="f-nama" placeholder="Nama lengkap"><div class="field-error" id="err-nama">Nama wajib diisi!</div></div>
     <div class="field"><label>Divisi</label>
-      <select id="f-divisi">
-        <option>Manajemen</option><option>Keuangan</option><option>HRD</option>
-        <option>Operasional</option><option>Marketing</option><option>R&D</option>
-        <option>IT</option><option>Logistik</option><option>Central Gudang</option><option>SSS Honggowongso</option>
-      </select>
+      <select id="f-divisi"></select>
     </div>
   </div>
   <div class="fg">
     <div class="field"><label>Status</label>
       <select id="f-status"><option>Aktif</option><option>Lunas</option><option>Pengajuan</option><option>Macet</option></select>
     </div>
-    <div class="field"><label>Nominal Pinjaman (Rp)</label><input type="number" id="f-nominal" placeholder="10000000"></div>
+    <div class="field"><label>Nominal Pinjaman (Rp)</label><input type="number" id="f-nominal" placeholder="10000000"><div class="field-error" id="err-nominal">Nominal wajib diisi dan lebih dari 0!</div></div>
   </div>
   <div class="fg">
-    <div class="field"><label>Cicilan Total (×)</label><input type="number" id="f-cicilan" placeholder="12"></div>
-    <div class="field"><label>Sisa Cicilan</label><input type="number" id="f-sisa-cicilan" placeholder="12"></div>
+    <div class="field"><label>Cicilan Total (×)</label><input type="number" id="f-cicilan" placeholder="12"><div class="field-error" id="err-cicilan">Cicilan wajib diisi!</div></div>
+    <div class="field"><label>Sisa Cicilan</label><input type="number" id="f-sisa-cicilan" placeholder="12"><div class="field-error" id="err-sisa-cicilan">Sisa cicilan tidak boleh melebihi cicilan total!</div></div>
   </div>
   <div class="fg full">
     <div class="field"><label>Nominal Cicilan/Bulan (kosongkan = otomatis)</label><input type="number" id="f-nom-cicilan" placeholder="otomatis = Nominal ÷ Cicilan"></div>
@@ -439,6 +577,42 @@ tfoot td{padding:9px 10px;font-weight:700;}
 </div>
 </div>
 
+<!-- MODAL CICILAN MANUAL -->
+<div class="overlay" id="overlay-cicilan">
+<div class="modal">
+  <button class="close-btn" id="close-cicilan-btn">✕</button>
+  <div class="modal-title">💳 Input Cicilan Manual</div>
+  <div style="background:var(--surface2);border-radius:9px;padding:12px;margin-bottom:14px;">
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:4px">Anggota</div>
+    <div style="font-size:.95rem;font-weight:700" id="cicil-nama">—</div>
+    <div style="font-size:.72rem;color:var(--muted);margin-top:4px">
+      Sisa Pokok: <span class="v-formula" id="cicil-sisa-pokok">—</span> &nbsp;|&nbsp;
+      Cicilan Tetap: <span class="v-rp" id="cicil-nominal-tetap">—</span>/bln
+    </div>
+  </div>
+  <div class="cicil-manual-box">
+    <div class="cicil-manual-title">💰 Nominal Yang Dibayar Bulan Ini</div>
+    <div class="cicil-manual-row">
+      <input type="number" id="cicil-input" placeholder="Masukkan nominal yang dibayar...">
+      <button class="btn-cicil" onclick="hitungCicilanManual()">Hitung</button>
+    </div>
+    <div id="cicil-preview" style="display:none;margin-top:10px">
+      <div class="fp-box" style="margin:0">
+        <div class="fp-title">⚡ PREVIEW SETELAH BAYAR</div>
+        <div class="fp-row"><span class="fp-lbl">Dibayar</span><span class="fp-val" id="cicil-prev-bayar">—</span></div>
+        <div class="fp-row"><span class="fp-lbl">Sisa Pokok Sebelum</span><span class="fp-val" id="cicil-prev-sebelum">—</span></div>
+        <div class="fp-row"><span class="fp-lbl">Sisa Pokok Sesudah</span><span class="fp-val" id="cicil-prev-sesudah" style="color:var(--accent2)">—</span></div>
+        <div class="fp-row"><span class="fp-lbl">Status</span><span class="fp-val" id="cicil-prev-status">—</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn-cancel" id="cancel-cicilan-btn">Batal</button>
+    <button class="btn-add" id="save-cicilan-btn">Simpan Pembayaran</button>
+  </div>
+</div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -447,6 +621,7 @@ const CREDS = { username:"admin", password:"koperasi2026" };
 
 let db, fire;
 let settings = { nama:"Sahabat Koperasi SDC Group", tahun:2026, modalAwal:0, bungaDefault:2 };
+let masterDivisi = ["Manajemen","Keuangan","HRD","Operasional","Marketing","R&D","IT","Logistik","Central Gudang","SSS Honggowongso"];
 let modalMasukData = Array.from({length:12},()=>({items:[
   {label:"Penerimaan modal pribadi",nilai:0},
   {label:"Penerimaan modal dari simpanan karyawan",nilai:0},
@@ -455,7 +630,9 @@ let modalMasukData = Array.from({length:12},()=>({items:[
   {label:"Lainnya",nilai:0},
 ]}));
 let pinjamanData = Array.from({length:12},()=>[]);
+let cicilanHistory = Array.from({length:12},()=>[]); // riwayat cicilan manual per bulan
 let activeBulan = 5;
+let cicilanTargetId = null;
 let editId = null, currentPage = 1;
 const PS = 10;
 
@@ -494,6 +671,14 @@ async function loadFromFirebase(){
     const mmDoc = await fire.getDoc(fire.doc(db,"koperasi","modalMasuk"));
     if(mmDoc.exists()) modalMasukData = mmDoc.data().data;
 
+    // Master Divisi
+    const dDoc = await fire.getDoc(fire.doc(db,"koperasi","masterDivisi"));
+    if(dDoc.exists()) masterDivisi = dDoc.data().list||masterDivisi;
+
+    // Cicilan History
+    const chDoc = await fire.getDoc(fire.doc(db,"koperasi","cicilanHistory"));
+    if(chDoc.exists()) cicilanHistory = chDoc.data().data||cicilanHistory;
+
     // Pinjaman per bulan
     for(let bi=0;bi<12;bi++){
       const pDoc = await fire.getDoc(fire.doc(db,"koperasi",`pinjaman_${bi}`));
@@ -514,6 +699,166 @@ async function saveModalMasuk(){
 
 async function savePinjamanBulan(bi){
   try { await fire.setDoc(fire.doc(db,"koperasi",`pinjaman_${bi}`),{list:pinjamanData[bi]}); } catch(e){ console.error(e); }
+}
+
+async function saveMasterDivisi(){
+  try { await fire.setDoc(fire.doc(db,"koperasi","masterDivisi"),{list:masterDivisi}); } catch(e){ console.error(e); }
+}
+
+async function saveCicilanHistory(){
+  try { await fire.setDoc(fire.doc(db,"koperasi","cicilanHistory"),{data:cicilanHistory}); } catch(e){ console.error(e); }
+}
+
+// ── DIVISI MANAGEMENT ──
+function renderDivisiTags(){
+  document.getElementById("divisi-count").textContent = masterDivisi.length+" divisi";
+  document.getElementById("divisi-tags").innerHTML = masterDivisi.map((d,i)=>
+    `<span class="divisi-tag">${d}<button onclick="removeDivisi(${i})" title="Hapus">✕</button></span>`
+  ).join("");
+  // Update semua dropdown divisi
+  const opts = masterDivisi.map(d=>`<option value="${d}">${d}</option>`).join("");
+  ["f-divisi"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){ const cur=el.value; el.innerHTML=opts; if(cur) el.value=cur; }
+  });
+}
+
+async function addDivisi(){
+  const inp = document.getElementById("divisi-new-input");
+  const val = inp.value.trim();
+  if(!val){ showToast("⚠️ Nama divisi tidak boleh kosong!",true); return; }
+  if(masterDivisi.includes(val)){ showToast("⚠️ Divisi sudah ada!",true); return; }
+  masterDivisi.push(val);
+  inp.value = "";
+  await saveMasterDivisi();
+  renderDivisiTags();
+  showToast("✓ Divisi "+val+" ditambahkan");
+}
+
+async function removeDivisi(idx){
+  const nama = masterDivisi[idx];
+  if(confirm(`Hapus divisi "${nama}"?`)){
+    masterDivisi.splice(idx,1);
+    await saveMasterDivisi();
+    renderDivisiTags();
+    showToast("🗑 Divisi dihapus");
+  }
+}
+
+// ── CICILAN MANUAL ──
+function openCicilanModal(id){
+  const bi = activeBulan;
+  const p = pinjamanData[bi].find(x=>x.id===id);
+  if(!p) return;
+  cicilanTargetId = id;
+  const sp = sisaPokok(p);
+  const cc = nomCicilan(p);
+  document.getElementById("cicil-nama").textContent = p.nama;
+  document.getElementById("cicil-sisa-pokok").textContent = rp(sp);
+  document.getElementById("cicil-nominal-tetap").textContent = rp(cc);
+  document.getElementById("cicil-input").value = "";
+  document.getElementById("cicil-preview").style.display = "none";
+  document.getElementById("overlay-cicilan").classList.add("open");
+}
+
+function hitungCicilanManual(){
+  const bi = activeBulan;
+  const p = pinjamanData[bi].find(x=>x.id===cicilanTargetId);
+  if(!p) return;
+  const bayar = parseFloat(document.getElementById("cicil-input").value)||0;
+  if(!bayar){ showToast("⚠️ Masukkan nominal!",true); return; }
+  const sp = sisaPokok(p);
+  const sisaBaru = Math.max(0, sp - bayar);
+  const statusBaru = sisaBaru === 0 ? "Lunas" : p.status;
+
+  document.getElementById("cicil-prev-bayar").textContent = rp(bayar);
+  document.getElementById("cicil-prev-sebelum").textContent = rp(sp);
+  document.getElementById("cicil-prev-sesudah").textContent = rp(sisaBaru);
+  document.getElementById("cicil-prev-status").textContent = statusBaru === "Lunas" ? "🎉 LUNAS!" : "Aktif (sisa "+rp(sisaBaru)+")";
+  document.getElementById("cicil-preview").style.display = "block";
+}
+
+async function saveCicilanManual(){
+  const bi = activeBulan;
+  const p = pinjamanData[bi].find(x=>x.id===cicilanTargetId);
+  if(!p) return;
+  const bayar = parseFloat(document.getElementById("cicil-input").value)||0;
+  if(!bayar){ showToast("⚠️ Masukkan nominal!",true); return; }
+
+  const spSebelum = sisaPokok(p);
+  const sisaBaru = Math.max(0, spSebelum - bayar);
+
+  // Simpan ke riwayat
+  cicilanHistory[bi].push({
+    id: p.id, nama: p.nama, bayar, spSebelum, spSesudah: sisaBaru,
+    waktu: new Date().toLocaleDateString("id-ID")
+  });
+
+  // Update data pinjaman
+  p.sisaPokokManual = sisaBaru;
+  if(sisaBaru === 0) p.status = "Lunas";
+
+  await savePinjamanBulan(bi);
+  await saveCicilanHistory();
+  document.getElementById("overlay-cicilan").classList.remove("open");
+  cicilanTargetId = null;
+  renderTable(); updateDashboard(); renderMaster();
+  showToast(sisaBaru===0 ? "🎉 Pinjaman LUNAS!" : "✓ Pembayaran disimpan");
+}
+
+// ── MASTER DATA RENDER ──
+function renderMaster(){
+  const bi = activeBulan;
+  document.getElementById("master-bulan-lbl").textContent = MF[bi];
+  renderDivisiTags();
+
+  // Status breakdown
+  const statuses = ["Aktif","Lunas","Pengajuan","Macet"];
+  document.getElementById("master-status-breakdown").innerHTML =
+    statuses.map(s=>{
+      const cnt = pinjamanData[bi].filter(p=>p.status===s).length;
+      const total = pinjamanData[bi].filter(p=>p.status===s).reduce((sum,p)=>sum+sisaPokok(p),0);
+      const colors = {Aktif:"var(--green)",Lunas:"#818cf8",Pengajuan:"var(--accent2)",Macet:"var(--red)"};
+      return `<div class="stat-row">
+        <span class="stat-label" style="color:${colors[s]}">${s}</span>
+        <span class="stat-val">${cnt} anggota — ${rp(total)}</span>
+      </div>`;
+    }).join("");
+
+  // Divisi breakdown
+  const divMap = {};
+  pinjamanData[bi].forEach(p=>{
+    if(!divMap[p.divisi]) divMap[p.divisi]={cnt:0,nominal:0,sisaP:0,bunga:0,aktif:0,macet:0,lunas:0};
+    const d = divMap[p.divisi];
+    d.cnt++; d.nominal+=p.nominal; d.sisaP+=sisaPokok(p); d.bunga+=bungaBulan(p);
+    if(p.status==="Aktif") d.aktif++;
+    else if(p.status==="Macet") d.macet++;
+    else if(p.status==="Lunas") d.lunas++;
+  });
+  document.getElementById("master-divisi-body").innerHTML =
+    Object.entries(divMap).sort((a,b)=>b[1].sisaP-a[1].sisaP).map(([div,d])=>`
+      <tr>
+        <td><span class="div-badge">${div}</span></td>
+        <td style="text-align:center;font-weight:600">${d.cnt}</td>
+        <td class="v-rp">${rp(d.nominal)}</td>
+        <td class="v-formula">${rp(d.sisaP)}</td>
+        <td class="v-formula">${rp(d.bunga)}</td>
+        <td style="color:var(--green);text-align:center">${d.aktif}</td>
+        <td style="color:var(--red);text-align:center">${d.macet}</td>
+        <td style="color:#818cf8;text-align:center">${d.lunas}</td>
+      </tr>`).join("") || `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted)">Belum ada data</td></tr>`;
+
+  // Cicilan history
+  const hist = cicilanHistory[bi];
+  document.getElementById("master-cicilan-body").innerHTML = hist.length
+    ? hist.map(h=>`<tr>
+        <td style="font-weight:600">${h.nama}</td>
+        <td class="v-rp">${rp(h.bayar)}</td>
+        <td class="v-formula">${rp(h.spSebelum)}</td>
+        <td style="color:var(--accent2);font-family:'JetBrains Mono',monospace;font-size:.7rem">${rp(h.spSesudah)}</td>
+        <td>${h.spSesudah===0?'<span class="badge b-lunas">Lunas</span>':'<span class="badge b-aktif">Aktif</span>'}</td>
+      </tr>`).join("")
+    : `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">Belum ada cicilan manual bulan ini</td></tr>`;
 }
 
 // ── LOADING ──
@@ -540,6 +885,7 @@ function initApp(){
   renderMM();
   renderTable();
   renderRekap();
+  renderDivisiTags();
 }
 
 // ── BULAN ──
@@ -668,6 +1014,7 @@ function renderTable(){
           <td class="v-laba">${lp>0?rp(lp):"—"}</td>
           <td>
             <button class="btn-act" data-edit="${p.id}">Edit</button>
+            <button class="btn-act" data-cicilan="${p.id}" style="color:var(--accent);border-color:var(--accent)">Cicilan</button>
             <button class="btn-act btn-del" data-del="${p.id}">Hapus</button>
           </td>
         </tr>`;}).join("")
@@ -754,6 +1101,7 @@ function previewFormula(){
 }
 
 async function savePinjaman(){
+  if(!validateForm()) return;
   const bi=activeBulan;
   const nama=document.getElementById("f-nama").value.trim();
   const divisi=document.getElementById("f-divisi").value;
@@ -763,7 +1111,6 @@ async function savePinjaman(){
   const sisaCicilan=parseInt(document.getElementById("f-sisa-cicilan").value)||0;
   const bungaRate=parseFloat(document.getElementById("f-bunga-rate").value)||0;
   const nomCicilanManual=parseFloat(document.getElementById("f-nom-cicilan").value)||0;
-  if(!nama||!nominal){showToast("⚠️ Nama & Nominal wajib diisi!",true);return;}
   const obj={nama,divisi,status,nominal,cicilan,sisaCicilan,bungaRate};
   if(nomCicilanManual>0) obj.nomCicilan=nomCicilanManual;
   if(editId){
@@ -820,6 +1167,8 @@ function renderRekap(){
       <td style="color:var(--green)">${rp(saldoDapat(11))}</td>
       <td>—</td>
     </tr>`;
+  // Render charts setelah rekap
+  setTimeout(renderCharts, 100);
 }
 
 // ── TOAST ──
@@ -871,8 +1220,21 @@ document.addEventListener("DOMContentLoaded",function(){
       document.getElementById("panel-"+this.dataset.tab).classList.add("active");
       if(this.dataset.tab==="pinjaman"){currentPage=1;renderTable();}
       if(this.dataset.tab==="rekap") renderRekap();
+      if(this.dataset.tab==="master") renderMaster();
     });
   });
+
+  // Cicilan modal
+  document.getElementById("close-cicilan-btn").addEventListener("click",()=>{
+    document.getElementById("overlay-cicilan").classList.remove("open");
+    cicilanTargetId=null;
+  });
+  document.getElementById("cancel-cicilan-btn").addEventListener("click",()=>{
+    document.getElementById("overlay-cicilan").classList.remove("open");
+    cicilanTargetId=null;
+  });
+  document.getElementById("save-cicilan-btn").addEventListener("click",saveCicilanManual);
+  document.getElementById("cicil-input").addEventListener("input",hitungCicilanManual);
 
   // Bulan pills
   document.getElementById("bulanPills").addEventListener("click",e=>{
@@ -890,8 +1252,10 @@ document.addEventListener("DOMContentLoaded",function(){
   document.getElementById("tableBody").addEventListener("click",e=>{
     const editBtn=e.target.closest("[data-edit]");
     const delBtn=e.target.closest("[data-del]");
+    const cicilanBtn=e.target.closest("[data-cicilan]");
     if(editBtn) openModal(editBtn.dataset.edit);
     if(delBtn)  delPinjaman(delBtn.dataset.del);
+    if(cicilanBtn) openCicilanModal(cicilanBtn.dataset.cicilan);
   });
   document.getElementById("pag-btns").addEventListener("click",e=>{
     const btn=e.target.closest(".pg-btn");
@@ -931,6 +1295,243 @@ document.addEventListener("DOMContentLoaded",function(){
     updateDashboard(); renderRekap();
   });
 });
+
+// ── VALIDASI ──
+function validateForm(){
+  let valid = true;
+  const nama    = document.getElementById("f-nama");
+  const nominal = document.getElementById("f-nominal");
+  const cicilan = document.getElementById("f-cicilan");
+  const sisaC   = document.getElementById("f-sisa-cicilan");
+
+  // Reset
+  [nama,nominal,cicilan,sisaC].forEach(el=>{
+    el.classList.remove("invalid");
+  });
+  ["err-nama","err-nominal","err-cicilan","err-sisa-cicilan"].forEach(id=>{
+    document.getElementById(id).classList.remove("show");
+  });
+
+  if(!nama.value.trim()){
+    nama.classList.add("invalid");
+    document.getElementById("err-nama").classList.add("show");
+    valid=false;
+  }
+  if(!nominal.value || parseFloat(nominal.value)<=0){
+    nominal.classList.add("invalid");
+    document.getElementById("err-nominal").classList.add("show");
+    valid=false;
+  }
+  if(!cicilan.value || parseInt(cicilan.value)<=0){
+    cicilan.classList.add("invalid");
+    document.getElementById("err-cicilan").classList.add("show");
+    valid=false;
+  }
+  const sc = parseInt(sisaC.value)||0;
+  const ct = parseInt(cicilan.value)||0;
+  if(sc > ct){
+    sisaC.classList.add("invalid");
+    document.getElementById("err-sisa-cicilan").classList.add("show");
+    valid=false;
+  }
+  // Validasi cicilan manual
+  if(document.getElementById("cicil-input")){
+    const bayar = parseFloat(document.getElementById("cicil-input").value)||0;
+    const bi=activeBulan;
+    const p=pinjamanData[bi].find(x=>x.id===cicilanTargetId);
+    if(p && bayar > sisaPokok(p)){
+      showToast("⚠️ Pembayaran melebihi sisa pokok!", true);
+      return false;
+    }
+  }
+  return valid;
+}
+
+// ── CHARTS ──
+let charts = {};
+
+function renderCharts(){
+  const labels = MF.map(m=>m.substring(0,3));
+  const dataModal     = MF.map((_,bi)=>modalAkhirTotal(bi)/1e6);
+  const dataBunga     = MF.map((_,bi)=>totalBunga(bi)/1e6);
+  const dataSisaPokok = MF.map((_,bi)=>totalSisaPokok(bi)/1e6);
+  const dataUtilisasi = MF.map((_,bi)=>{
+    const mak=modalAkhirTotal(bi);
+    return mak>0?(totalSisaPokok(bi)/mak*100):0;
+  });
+
+  const cfg = (id, label, data, color, type="line") => {
+    if(charts[id]) charts[id].destroy();
+    const ctx = document.getElementById(id);
+    if(!ctx) return;
+    charts[id] = new Chart(ctx, {
+      type,
+      data:{
+        labels,
+        datasets:[{
+          label,data,
+          borderColor: color,
+          backgroundColor: type==="bar" ? color+"88" : color+"22",
+          borderWidth:2,
+          pointRadius:3,
+          fill: type==="line",
+          tension:.4
+        }]
+      },
+      options:{
+        responsive:true,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{ticks:{color:"#64748b",font:{size:9}},grid:{color:"#1e3050"}},
+          y:{ticks:{color:"#64748b",font:{size:9},callback:v=>type==="line"||type==="bar"?v.toFixed(0)+"jt":v.toFixed(1)+"%"},grid:{color:"#1e3050"}}
+        }
+      }
+    });
+  };
+
+  cfg("chartModal",     "Modal Akhir (jt)",   dataModal,     "#00c896");
+  cfg("chartBunga",     "Bunga (jt)",          dataBunga,     "#f59e0b", "bar");
+  cfg("chartSisaPokok", "Sisa Pokok (jt)",     dataSisaPokok, "#6366f1");
+  cfg("chartUtilisasi", "Utilisasi (%)",        dataUtilisasi, "#ef4444", "bar");
+}
+
+// ── EXPORT EXCEL (REKAP) ──
+function exportExcel(){
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: Rekap Tahunan
+  const rekapRows = [
+    ["REKAP TAHUNAN SAHABAT KOPERASI", settings.tahun],
+    [],
+    ["Bulan","Modal Awal","Modal Masuk","Sisa Pokok","Bunga Bln Ini","Modal Akhir","Saldo Dipinjam","Utilisasi (%)"],
+    ...MF.map((m,bi)=>[
+      m,
+      modalAwal(bi), totalMM(bi), totalSisaPokok(bi),
+      totalBunga(bi), modalAkhirTotal(bi), saldoDapat(bi),
+      modalAkhirTotal(bi)>0?(totalSisaPokok(bi)/modalAkhirTotal(bi)*100).toFixed(1)+"%":"0%"
+    ])
+  ];
+  const ws1 = XLSX.utils.aoa_to_sheet(rekapRows);
+  XLSX.utils.book_append_sheet(wb, ws1, "Rekap Tahunan");
+
+  // Sheet 2: Data Pinjaman bulan aktif
+  const bi = activeBulan;
+  const pinjamanRows = [
+    [`DATA PINJAMAN — ${MF[bi]} ${settings.tahun}`],
+    [],
+    ["No","Nama","Divisi","Status","Nominal Pinjaman","Nominal Pelunasan","Cicilan","Sisa Cicilan",
+     "Bunga %","Nominal Cicilan","Cicilan+Bunga","Sisa Pokok","Sisa Pinjaman","Laba"],
+    ...pinjamanData[bi].map((p,i)=>[
+      i+1, p.nama, p.divisi, p.status, p.nominal,
+      nomPelunasan(p), p.cicilan, p.sisaCicilan,
+      p.bungaRate+"%", Math.round(nomCicilan(p)),
+      Math.round(cicilanBunga(p)), Math.round(sisaPokok(p)),
+      Math.round(sisaPinjaman(p)), Math.round(labaPelunasan(p))
+    ]),
+    [],
+    ["","","","TOTAL",
+      pinjamanData[bi].reduce((s,p)=>s+p.nominal,0),"","","","","",
+      "","",
+      pinjamanData[bi].reduce((s,p)=>s+Math.round(sisaPokok(p)),0),""
+    ]
+  ];
+  const ws2 = XLSX.utils.aoa_to_sheet(pinjamanRows);
+  XLSX.utils.book_append_sheet(wb, ws2, `Pinjaman ${MF[bi]}`);
+
+  XLSX.writeFile(wb, `Koperasi_${MF[bi]}_${settings.tahun}.xlsx`);
+  showToast("✓ File Excel berhasil didownload!");
+}
+
+// ── EXPORT PINJAMAN EXCEL (dari tab data pinjaman) ──
+function exportPinjamanExcel(){
+  const bi = activeBulan;
+  const rows = [
+    [`DATA PINJAMAN ${MF[bi].toUpperCase()} ${settings.tahun}`],
+    [],
+    ["No","Nama","Divisi","Status","Nominal","Pelunasan","Cicilan","Sisa Cicilan",
+     "Bunga%","Nom Cicilan","Cicilan+Bunga","Sisa Pokok","Sisa Pinjaman","Laba"],
+    ...getFiltered().map((p,i)=>[
+      i+1,p.nama,p.divisi,p.status,p.nominal,
+      nomPelunasan(p),p.cicilan,p.sisaCicilan,p.bungaRate+"%",
+      Math.round(nomCicilan(p)),Math.round(cicilanBunga(p)),
+      Math.round(sisaPokok(p)),Math.round(sisaPinjaman(p)),Math.round(labaPelunasan(p))
+    ])
+  ];
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb,ws,`Pinjaman ${MF[bi]}`);
+  XLSX.writeFile(wb,`Pinjaman_${MF[bi]}_${settings.tahun}.xlsx`);
+  showToast("✓ Excel pinjaman didownload!");
+}
+
+// ── EXPORT CSV ──
+function exportCSV(){
+  const bi = activeBulan;
+  const header = ["Bulan","Modal Awal","Modal Masuk","Sisa Pokok","Bunga","Modal Akhir","Saldo","Utilisasi"];
+  const rows = MF.map((m,bi)=>[
+    m, modalAwal(bi), totalMM(bi), totalSisaPokok(bi),
+    totalBunga(bi), modalAkhirTotal(bi), saldoDapat(bi),
+    modalAkhirTotal(bi)>0?(totalSisaPokok(bi)/modalAkhirTotal(bi)*100).toFixed(1):0
+  ]);
+  const csv = [header,...rows].map(r=>r.join(",")).join("\n");
+  const blob = new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href=url; a.download=`Rekap_${settings.tahun}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  showToast("✓ CSV berhasil didownload!");
+}
+
+// ── EXPORT PDF ──
+function exportPDF(){
+  const bi = activeBulan;
+  const printWin = window.open("","_blank");
+  const rows = pinjamanData[bi].map((p,i)=>`
+    <tr>
+      <td>${i+1}</td><td>${p.nama}</td><td>${p.divisi}</td><td>${p.status}</td>
+      <td>Rp ${p.nominal.toLocaleString("id-ID")}</td>
+      <td>${p.bungaRate}%</td>
+      <td>Rp ${Math.round(sisaPokok(p)).toLocaleString("id-ID")}</td>
+      <td>Rp ${Math.round(sisaPinjaman(p)).toLocaleString("id-ID")}</td>
+    </tr>`).join("");
+
+  printWin.document.write(`
+    <!DOCTYPE html><html><head>
+    <title>Laporan Koperasi ${MF[bi]} ${settings.tahun}</title>
+    <style>
+      body{font-family:Arial,sans-serif;font-size:11px;padding:20px;color:#000;}
+      h2{text-align:center;margin-bottom:4px;font-size:14px;}
+      h3{text-align:center;margin-bottom:16px;font-size:11px;font-weight:normal;color:#555;}
+      table{width:100%;border-collapse:collapse;margin-top:12px;}
+      th{background:#1B5E20;color:#fff;padding:6px 8px;text-align:left;font-size:10px;}
+      td{padding:5px 8px;border-bottom:1px solid #ddd;font-size:10px;}
+      tr:nth-child(even){background:#f9f9f9;}
+      .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+      .kpi{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px;text-align:center;}
+      .kpi-lbl{font-size:9px;color:#555;margin-bottom:4px;}
+      .kpi-val{font-size:13px;font-weight:bold;color:#1B5E20;}
+      @media print{@page{margin:15mm;}}
+    </style>
+    </head><body>
+    <h2>LAPORAN BULANAN SAHABAT KOPERASI</h2>
+    <h3>${settings.nama} — ${MF[bi]} ${settings.tahun}</h3>
+    <div class="summary">
+      <div class="kpi"><div class="kpi-lbl">Modal Akhir</div><div class="kpi-val">Rp ${Math.round(modalAkhirTotal(bi)).toLocaleString("id-ID")}</div></div>
+      <div class="kpi"><div class="kpi-lbl">Total Sisa Pokok</div><div class="kpi-val">Rp ${Math.round(totalSisaPokok(bi)).toLocaleString("id-ID")}</div></div>
+      <div class="kpi"><div class="kpi-lbl">Bunga Bulan Ini</div><div class="kpi-val">Rp ${Math.round(totalBunga(bi)).toLocaleString("id-ID")}</div></div>
+      <div class="kpi"><div class="kpi-lbl">Saldo Dipinjam</div><div class="kpi-val">Rp ${Math.round(saldoDapat(bi)).toLocaleString("id-ID")}</div></div>
+    </div>
+    <table>
+      <thead><tr><th>No</th><th>Nama</th><th>Divisi</th><th>Status</th><th>Nominal</th><th>Bunga%</th><th>Sisa Pokok</th><th>Sisa Pinjaman</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <p style="margin-top:16px;font-size:9px;color:#888;text-align:right">
+      Dicetak: ${new Date().toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
+    </p>
+    <script>window.onload=()=>{window.print();}<\/script>
+    </body></html>`);
+  printWin.document.close();
+}
 
 // ── FIREBASE READY ──
 document.addEventListener("firebaseReady",function(){
